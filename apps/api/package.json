@@ -13,8 +13,13 @@
   "license": "ISC",
   "dependencies": {
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "store": "workspace:*"
+    "json": "^11.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "store": "workspace:*",
+    "zod": "^4.0.10"
   },
   "devDependencies": {
     "tsx": "^4.20.3"
