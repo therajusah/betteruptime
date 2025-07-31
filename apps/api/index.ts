@@ -33,31 +33,28 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/status/:websiteId", authMiddleware, async (req, res) => {
- const website = await prismaClient.website.findFirst({
-  where: {
-    user_id: req.userId!,
-    id: req.params.websiteId,
+  const website = await prismaClient.website.findFirst({
+    where: {
+      user_id: req.userId!,
+      id: req.params.websiteId
+    },
     include: {
       ticks: {
-        orderBy: [{
-          createdAt: 'desc'
-        }],
-         take: 1
+        orderBy: [{ id: 'desc' }],
+        take: 1
       }
     }
+  });
 
+  if (!website) {
+    res.status(409).json({ message: "Not found" });
+    return;
   }
- })
 
-    if(!website) {
-      res.status(409).json({
-        message: "Not found"
-      })
-    }
- res.json({
- url: website.url,
- id: website.id
- })
+  res.json({
+    url: website.url,
+    id: website.id
+  });
 });
 
 
@@ -99,7 +96,7 @@ app.post("/user/signin", async (req, res) =>{
     return;
   }
   let token = jwt.sign({
-    sub: user.id
+    sub: user?.id || ""
   },
 process.env.JWT_SECRET!)
 
