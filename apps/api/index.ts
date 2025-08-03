@@ -3,13 +3,15 @@ import "dotenv/config";
 import express from "express";
 import jwt from "jsonwebtoken";
 import { prismaClient } from "store/client";
-import { AuthInput } from "./types";
+import { AuthInput, LoginInput } from "./types";
 import { authMiddleware } from "./middleware";
+import cors from "cors";
 
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.post("/website", authMiddleware, async(req, res) => {
   if (!req.body.url) {
@@ -41,7 +43,7 @@ app.get("/status/:websiteId", authMiddleware, async (req, res) => {
     include: {
       ticks: {
         orderBy: [{ id: 'desc' }],
-        take: 1
+        take: 10
       }
     }
   });
@@ -68,6 +70,7 @@ app.post("/user/signup", async (req, res)=> {
   try{
   let user = await prismaClient.user.create({
     data: {
+      name: data.data.name,
       username: data.data.username,
       password: data.data.password
     }
@@ -80,8 +83,8 @@ app.post("/user/signup", async (req, res)=> {
 }
 })
 
-app.post("/user/signin", async (req, res) =>{
-  const data = AuthInput.safeParse(req.body);
+app.post("/user/login", async (req, res) =>{
+  const data = LoginInput.safeParse(req.body);
   if (!data.success) {
     res.status(403).send("");
     return;
@@ -101,11 +104,28 @@ app.post("/user/signin", async (req, res) =>{
 process.env.JWT_SECRET!)
 
 res.json({
-  jwt: token
+  token: token
 })
 })
 
 
-app.listen(3001, () => {
-  console.log("Server is running on port 3001");
+app.get("/website", authMiddleware, async (req, res) => {
+ const website = await prismaClient.website.findMany({
+    where: {
+      user_id: req.userId
+    },
+    include: {
+      ticks: {
+        orderBy: [{ id: 'desc' }],
+        take: 1
+      }
+    }
+  })
+  res.json({
+    websites: website
+  })
+})
+
+app.listen(3002, () => {
+  console.log("Server is running on port 3002");
 });
